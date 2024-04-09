@@ -12,16 +12,19 @@ class TinkoffIdResult {
   ///Message on failure.
   late final String message;
 
+  ///Additional value.
+  final String? additionalValue;
+
   ///Type of reason for failure.
-  late final TinkoffIdFailure failureValue;
+  late final TinkoffIdFailureType failureType;
 
   ///Success constructor.
-  TinkoffIdResult.success(this.tokenPayload) {
+  TinkoffIdResult.success(this.tokenPayload, {this.additionalValue}) {
     isSuccess = true;
   }
 
   ///Failed result constructor.
-  TinkoffIdResult.failure(this.message, this.failureValue) {
+  TinkoffIdResult.failure(this.message, this.failureType, {this.additionalValue}) {
     isSuccess = false;
   }
 

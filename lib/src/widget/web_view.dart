@@ -71,7 +71,7 @@ class _TinkoffIdWebViewState extends State<TinkoffIdWebView> {
                 request.url.contains("${tinkoffUrl}api")) {
               return NavigationDecision.navigate;
             } else if (request.url.contains(tinkoffUrl)) {
-              _onFinished(TinkoffIdResult.failure("Cancelled by user.", TinkoffIdFailure.cancelledByUser));
+              _onFinished(TinkoffIdResult.failure("Cancelled by user.", TinkoffIdFailureType.cancelledByUser));
               return NavigationDecision.prevent;
             }
             if (request.url.contains(widget.mobileRedirectUri)) {
@@ -93,7 +93,7 @@ class _TinkoffIdWebViewState extends State<TinkoffIdWebView> {
             if ((await _webViewController.currentUrl())?.contains("https://id.tinkoff.ru/auth/step?cid") ?? true) {
               return;
             }
-            _onFinished(TinkoffIdResult.failure(error.description, TinkoffIdFailure.webResourceError));
+            _onFinished(TinkoffIdResult.failure(error.description, TinkoffIdFailureType.webResourceError));
           },
         ),
       );
@@ -112,7 +112,7 @@ class _TinkoffIdWebViewState extends State<TinkoffIdWebView> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () {
-        _onFinished(TinkoffIdResult.failure("Cancelled by user.", TinkoffIdFailure.cancelledByUser));
+        _onFinished(TinkoffIdResult.failure("Cancelled by user.", TinkoffIdFailureType.cancelledByUser));
         return Future(() => false);
       },
       child: Column(
@@ -141,8 +141,19 @@ class _TinkoffIdWebViewState extends State<TinkoffIdWebView> {
   }
 
   _processSuccessUrl(String url) async {
-    final queryParameters = Uri.parse(url).queryParameters;
+    final queryParameters = Uri
+        .parse(url)
+        .queryParameters;
     final code = queryParameters["code"];
+    final errorCode = queryParameters["errorCode"];
+    if (errorCode != null && errorCode == "access_denied") {
+      _onFinished(TinkoffIdResult.failure(
+        "Доступ заблокирован",
+        TinkoffIdFailureType.accessDenied,
+        additionalValue: url
+      ));
+    }
+
     if (code?.isNotEmpty ?? false) {
       try {
         final tokenPayload = await _tinkoffIdWebApi.changeCodeForTokens(
@@ -153,12 +164,12 @@ class _TinkoffIdWebViewState extends State<TinkoffIdWebView> {
         );
         _onFinished(TinkoffIdResult.success(tokenPayload));
       } catch (e) {
-        _onFinished(TinkoffIdResult.failure(e.toString(), TinkoffIdFailure.apiCallError));
+        _onFinished(TinkoffIdResult.failure(e.toString(), TinkoffIdFailureType.apiCallError));
       }
     } else {
       _onFinished(TinkoffIdResult.failure(
         "Отсутствует код проверки",
-        TinkoffIdFailure.noCodeInRedirectUri,
+        TinkoffIdFailureType.noCodeInRedirectUri,
       ));
     }
   }
