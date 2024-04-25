@@ -141,36 +141,36 @@ class _TinkoffIdWebViewState extends State<TinkoffIdWebView> {
   }
 
   _processSuccessUrl(String url) async {
-    final queryParameters = Uri
-        .parse(url)
-        .queryParameters;
+    final queryParameters = Uri.parse(url).queryParameters;
     final code = queryParameters["code"];
-    final errorCode = queryParameters["errorCode"];
-    if (errorCode != null && errorCode == "access_denied") {
-      _onFinished(TinkoffIdResult.failure(
-        "Доступ заблокирован",
-        TinkoffIdFailureType.accessDenied,
-        additionalValue: url
-      ));
-    }
-
-    if (code?.isNotEmpty ?? false) {
-      try {
-        final tokenPayload = await _tinkoffIdWebApi.changeCodeForTokens(
-          widget.clientId,
-          widget.mobileRedirectUri,
-          code!,
-          _uriCreator.codeVerifier,
-        );
-        _onFinished(TinkoffIdResult.success(tokenPayload));
-      } catch (e) {
-        _onFinished(TinkoffIdResult.failure(e.toString(), TinkoffIdFailureType.apiCallError));
-      }
+    final error = queryParameters["error"];
+    if (error != null && error == "access_denied") {
+      _onFinished(
+        TinkoffIdResult.failure(
+          "Доступ заблокирован",
+          TinkoffIdFailureType.accessDenied,
+          additionalValue: url,
+        ),
+      );
     } else {
-      _onFinished(TinkoffIdResult.failure(
-        "Отсутствует код проверки",
-        TinkoffIdFailureType.noCodeInRedirectUri,
-      ));
+      if (code?.isNotEmpty ?? false) {
+        try {
+          final tokenPayload = await _tinkoffIdWebApi.changeCodeForTokens(
+            widget.clientId,
+            widget.mobileRedirectUri,
+            code!,
+            _uriCreator.codeVerifier,
+          );
+          _onFinished(TinkoffIdResult.success(tokenPayload));
+        } catch (e) {
+          _onFinished(TinkoffIdResult.failure(e.toString(), TinkoffIdFailureType.apiCallError));
+        }
+      } else {
+        _onFinished(TinkoffIdResult.failure(
+          "Отсутствует код проверки",
+          TinkoffIdFailureType.noCodeInRedirectUri,
+        ));
+      }
     }
   }
 
