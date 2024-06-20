@@ -20,8 +20,8 @@ abstract class TinkoffIdWebApi {
 class TinkoffIdWebApiImpl implements TinkoffIdWebApi {
   final Dio _dio = Dio(BaseOptions(
     baseUrl: "https://id.tinkoff.ru/",
-    connectTimeout: 8000,
-    receiveTimeout: 8000,
+    connectTimeout: const Duration(seconds: 8),
+    receiveTimeout: const Duration(seconds: 8),
   ));
 
   TinkoffIdWebApiImpl() {
