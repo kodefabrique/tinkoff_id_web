@@ -68,7 +68,8 @@ class _TinkoffIdWebViewState extends State<TinkoffIdWebView> {
 
             if (request.url.contains("${tinkoffUrl}tinkoff-id") ||
                 request.url.contains("${tinkoffUrl}cards") ||
-                request.url.contains("${tinkoffUrl}api")) {
+                request.url.contains("${tinkoffUrl}api") ||
+                request.url.contains("${tinkoffUrl}cookie-sync")) {
               return NavigationDecision.navigate;
             } else if (request.url.contains(tinkoffUrl)) {
               _onFinished(TinkoffIdResult.failure("Cancelled by user.", TinkoffIdFailureType.cancelledByUser));
